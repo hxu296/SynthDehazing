@@ -33,12 +33,13 @@ def main(argv):
     model_dehazer = dehazing_proper.ModelDehazer()
     model_dehazer.set_models(opts.albedo_checkpt_name, opts.t_checkpt_name, opts.a_checkpt_name)
 
-    hazy_list = glob.glob(opts.path)  # specify atmosphere intensity
+    hazy_list = list(os.listdir(opts.path))  # specify atmosphere intensity
     print(hazy_list)
 
-    for i, (hazy_path) in enumerate(hazy_list):
+    for i, (hazy_img) in enumerate(hazy_list):
         with torch.no_grad():
-            img_name = hazy_path.split("\\")[1].split(".")[0]  # save new image as PNG
+            hazy_path = os.path.join(opts.path, hazy_img)
+            img_name = hazy_img.split(".")[0]  # save new image as PNG
             hazy_img = tensor_utils.load_true_img(hazy_path)
 
             #to avoid banding issues. Input images must be square
@@ -51,9 +52,9 @@ def main(argv):
             hazy_img = cv2.resize(hazy_img, im_size, cv2.INTER_CUBIC)
             clear_img = cv2.resize(clear_img, im_size, cv2.INTER_CUBIC)
 
-            print("Processed: ", (opts.output + img_name + ".png"))
+            print("Processed: ", os.path.join(opts.output, img_name + ".png"))
             save_img(hazy_img, hazy_copy_dir + img_name + ".png")
-            save_img(clear_img, opts.output + img_name + ".png")
+            save_img(clear_img, os.path.join(opts.output, img_name + ".png"))
 
 
 if __name__ == "__main__":
